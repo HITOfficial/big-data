@@ -1,6 +1,6 @@
 # Flink Project
 ## SETUP
-### [ALPACA API](./alpaca-api/Readme.md)
+### [ALPACA API](./alpaca-api)
 ---
 ### Database
 `docker-compose up -d`
