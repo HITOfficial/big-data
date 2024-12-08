@@ -1,21 +1,6 @@
-### Setup local dev
-```
-python -m venv -venv
-source .venv/bin/activate
-
-pip install -r requirements.txt
-```
-
-### Setup local variables in .env file
-
-```
-APCA_API_KEY_ID=<KEY>
-APCA_API_SECRET_KEY=<SECRET>
-```
+# Flink Project
+## SETUP
+### [ALPACA API](./alpaca-api/Readme.md)
 ---
-
-
-### Run
-
-#### Database
+### Database
 `docker-compose up -d`
