@@ -1,11 +1,11 @@
+import datetime
 import json
-import os
 
 from alpaca.data.live import CryptoDataStream
+from alpaca.data.models.orderbooks import Orderbook, OrderbookQuote
 from config import API_KEY, KAFKA_BOOTSTRAP_SERVER, SECRET_KEY
 from handler import kafka_produce_message
 from kafka import KafkaProducer
-from kafka.errors import KafkaError, KafkaTimeoutError
 
 usd_pairs = [
     "AAVE/USD",
@@ -30,6 +30,21 @@ usd_pairs = [
 ]
 
 
+def custom_serializer(obj):
+    def inner_serializer(obj):
+        if isinstance(obj, datetime.datetime):
+            return obj.isoformat()  # Convert datetime to string
+        if isinstance(obj, OrderbookQuote):
+            return obj.__dict__
+
+        raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
+
+    if isinstance(obj, Orderbook):
+        return json.dumps(obj.__dict__, default=inner_serializer)
+
+    raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
+
+
 def subscribe_orderbooks_stream(crypto_data_stream, producer, topic, usd_pairs):
     async def async_handler(data):
         await kafka_produce_message(producer, topic, data)
@@ -41,16 +56,14 @@ def subscribe_orderbooks_stream(crypto_data_stream, producer, topic, usd_pairs):
 def main():
     producer = None
     topic = "orderbooks-topic"
+    print(KAFKA_BOOTSTRAP_SERVER, "HELLO FROM DEBUG")
     try:
         producer = KafkaProducer(
             bootstrap_servers=KAFKA_BOOTSTRAP_SERVER,
-            security_protocol="SSL",
-            api_version=(
-                0,
-                11,
-                5,
-            ),  # TODO: update api_version, added OOD https://stackoverflow.com/questions/38854957/nobrokersavailable-nobrokersavailable-kafka-error
-            value_serializer=lambda v: json.dumps(v).encode("utf-8"),
+            acks=0,
+            value_serializer=lambda v: json.dumps(
+                v, default=custom_serializer
+            ).encode(),
         )
     except Exception as e:
         print(f"KafkaProducer could not be initialized. {e}")
