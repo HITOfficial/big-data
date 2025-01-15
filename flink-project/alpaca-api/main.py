@@ -56,7 +56,6 @@ def subscribe_orderbooks_stream(crypto_data_stream, producer, topic, usd_pairs):
 def main():
     producer = None
     topic = "orderbooks-topic"
-    print(KAFKA_BOOTSTRAP_SERVER, "HELLO FROM DEBUG")
     try:
         producer = KafkaProducer(
             bootstrap_servers=KAFKA_BOOTSTRAP_SERVER,
